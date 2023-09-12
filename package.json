@@ -10,6 +10,10 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^3.0.12"
+    "astro": "^3.0.12",
+    "three": "^0.156.1"
+  },
+  "devDependencies": {
+    "vite-plugin-glsl": "^1.1.2"
   }
 }
