@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "astro": "^3.0.12",
-    "three": "^0.156.1"
+    "glsl-noise": "^0.0.0",
+    "glslify": "^7.1.1",
+    "three": "^0.156.1",
+    "vite-plugin-glslify": "^2.0.2"
   },
   "devDependencies": {
     "vite-plugin-glsl": "^1.1.2"
