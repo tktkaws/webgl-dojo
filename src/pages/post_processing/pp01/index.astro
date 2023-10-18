@@ -1,0 +1,81 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="post_processing">
+	<h1>post_processing</h1>
+</Layout>
+
+<style>
+  body { margin: 0; }
+  #target-img {
+    display: none;
+  }
+</style>
+
+<script>
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import fragmentShader from "./fragment.glsl";
+import vertexShader from "./vertex.glsl";
+
+// メインのレンダラーの設定
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0xeeeeee);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+
+// レンダーターゲット
+const renderTarget = new THREE.WebGLRenderTarget(500, 500)
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const rtCamera = camera.clone();
+rtCamera.aspect = 1;
+rtCamera.updateProjectionMatrix();
+const rtScene = new THREE.Scene();
+rtScene.background = new THREE.Color(0xeeeeee);
+rtCamera.position.set(0,0,10);
+camera.position.z = 10;
+const controls = new OrbitControls(camera, renderer.domElement);
+
+const rtGeo = new THREE.BoxGeometry(4, 4, 4);
+const rtMate = new THREE.MeshLambertMaterial({ color: 0x009dff, side: THREE.DoubleSide });
+const rtMesh = new THREE.Mesh(rtGeo, rtMate);
+
+const geo = new THREE.BoxGeometry(4, 4, 4);
+const mate = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
+  uniforms: {
+    tDiffuse: { value: renderTarget.texture }
+  }
+ });
+const mesh = new THREE.Mesh(geo, mate);
+scene.add(mesh);
+
+scene.background = new THREE.Color( 0xeeeeee );
+
+const light4 = new THREE.AmbientLight(0xFFFFFF, 1.0);
+rtScene.add(light4);
+
+rtScene.add(rtMesh);
+
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(rtScene, rtCamera);
+  renderer.setRenderTarget(null);
+
+  renderer.render(scene, camera);
+
+  rtMesh.rotation.x += 0.01;
+  rtMesh.rotation.y += 0.01;
+
+  controls.update();
+}
+
+animate();
+</script>
