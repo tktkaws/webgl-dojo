@@ -58,13 +58,12 @@ scene.background = new THREE.Color( 0xeeeeee );
 
 const light4 = new THREE.AmbientLight(0xFFFFFF, 1.0);
 rtScene.add(light4);
-
 rtScene.add(rtMesh);
 
-
+// ライトの設定
 function animate() {
+  // レンダリング
   requestAnimationFrame(animate);
-
   renderer.setRenderTarget(renderTarget);
   renderer.render(rtScene, rtCamera);
   renderer.setRenderTarget(null);
