@@ -1,0 +1,104 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+---
+
+<Layout title="POST PROCESSING FILMPASS">
+	<h1>POST PROCESSING FILMPASS</h1>
+</Layout>
+
+<style>
+  body { margin: 0; }
+  #target-img {
+    display: none;
+  }
+</style>
+
+<script>
+ import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import fragmentShader from "./fragment.glsl";
+import vertexShader from "./vertex.glsl";
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import {GlitchPass } from 'three/examples/jsm/postprocessing/GlitchPass.js';
+import {FilmPass } from 'three/examples/jsm/postprocessing/FilmPass.js';
+import {DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass.js';
+import { FilmShader } from "three/examples/jsm/shaders/FilmShader";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass"
+
+
+
+
+// メインのレンダラーの設定
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0xeeeeee);
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+// ポストプロセッシングの設定
+const composer = new EffectComposer(renderer);
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// const pass = new GlitchPass();
+const pass = new ShaderPass(FilmShader)
+pass.uniforms.grayscale.value = 1;
+composer.addPass(pass);
+
+// レンダーターゲット
+const renderTarget = new THREE.WebGLRenderTarget(500, 500)
+
+
+const rtCamera = camera.clone();
+rtCamera.aspect = 1;
+rtCamera.updateProjectionMatrix();
+const rtScene = new THREE.Scene();
+rtScene.background = new THREE.Color(0xeeeeee);
+rtCamera.position.set(0,0,10);
+camera.position.z = 10;
+const controls = new OrbitControls(camera, renderer.domElement);
+
+const rtGeo = new THREE.BoxGeometry(4, 4, 4);
+const rtMate = new THREE.MeshLambertMaterial({ color: 0x009dff, side: THREE.DoubleSide });
+const rtMesh = new THREE.Mesh(rtGeo, rtMate);
+
+const geo = new THREE.BoxGeometry(4, 4, 4);
+const mate = new THREE.ShaderMaterial({
+  vertexShader,
+  fragmentShader,
+  uniforms: {
+    tDiffuse: { value: renderTarget.texture }
+  }
+ });
+const mesh = new THREE.Mesh(geo, mate);
+scene.add(mesh);
+
+scene.background = new THREE.Color( 0xeeeeee );
+
+const light4 = new THREE.AmbientLight(0xFFFFFF, 1.0);
+rtScene.add(light4);
+
+rtScene.add(rtMesh);
+
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(rtScene, rtCamera);
+  renderer.setRenderTarget(null);
+
+  // renderer.render(scene, camera);
+  composer.render();
+
+  rtMesh.rotation.x += 0.01;
+  rtMesh.rotation.y += 0.01;
+
+  controls.update();
+}
+
+animate();
+
+</script>
