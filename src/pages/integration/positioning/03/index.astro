@@ -1,0 +1,104 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+const title = "メッシュの表示位置をHTMLと合わせる";
+---
+
+<Layout title={title}>
+  <h1 class="title">
+    {title}
+  </h1>
+  <canvas id="canvas"></canvas>
+  <div id="div-1"></div>
+</Layout>
+
+<style>
+  body {
+    margin: 0;
+}
+#div-1 {
+  width: 100px;
+  height: 100px;
+  margin-left: 100px;
+  margin-top: 100px;
+  background-color: green;
+  opacity: 0.3;
+}
+
+#canvas {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: #000000;
+    font-size: 20px;
+    padding: 10px;
+  }
+</style>
+<script>
+    import { WebGLRenderer, Scene, PerspectiveCamera, PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
+
+    const world = {};
+
+init();
+function init() {
+    const canvas = document.querySelector('#canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    world.renderer = new WebGLRenderer({
+        canvas,
+        antialias: true
+    });
+    world.renderer.setSize(canvasRect.width, canvasRect.height, false);
+    world.renderer.setPixelRatio(window.devicePixelRatio);
+    world.renderer.setClearColor(0x000000, 0);
+
+    world.scene = new Scene();
+
+    const cameraWidth = canvasRect.width;
+    const cameraHeight = canvasRect.height;
+    const near = 1500;
+    const far = 4000;
+    const aspect = cameraWidth / cameraHeight;
+    const cameraZ = 2500;
+    const radian = 2 * Math.atan(cameraHeight / 2 / cameraZ);
+    const fov = radian * (180 / Math.PI);
+    world.camera = new PerspectiveCamera(fov, aspect, near, far);
+    world.camera.position.z = cameraZ;
+
+    const geometry = new PlaneGeometry(100, 100);
+    const material = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: .3 });
+    const mesh = new Mesh(geometry, material);
+
+    const div1 = document.querySelector('#div-1');
+    const div1Rect = div1.getBoundingClientRect();
+    const { x, y } = getWorldPosition(div1Rect, canvasRect);
+    mesh.position.x = x;
+        mesh.position.y = y;
+
+        world.scene.add(mesh);
+
+    function getWorldPosition (div1Rect, canvasRect) {
+        const rect = div1Rect;
+        const x = rect.left + rect.width / 2 - canvasRect.width / 2;
+        const y = -rect.top - rect.height / 2 + canvasRect.height / 2;
+        return { x, y };
+    }
+
+
+    world.scene.add(mesh);
+    animate();
+    function animate() {
+        requestAnimationFrame(animate);
+        world.renderer.render(world.scene, world.camera);
+    }
+}
+
+</script>
