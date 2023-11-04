@@ -1,0 +1,151 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+const title = "スクロールに追従するメッシュの実装";
+---
+
+<Layout title={title}>
+  <h1 class="title">
+    {title}
+  </h1>
+  <div data-webgl></div>
+    <section data-webgl></section>
+    <img data-webgl src="/output1.jpg"/>
+  <canvas id="canvas"></canvas>
+</Layout>
+
+<style>
+  body {
+    margin: 0;
+}
+
+#canvas {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+  [data-webgl] {
+        background: green;
+        opacity: .3;
+      }
+
+      div {
+        margin-left: 100px;
+        margin-top: 100px;
+        width: 100px;
+        height: 100px;
+      }
+
+      section {
+        margin-left: 300px;
+        margin-top: 50px;
+        width: 200px;
+        height: 100px;
+      }
+
+      img {
+        position: absolute;
+        right: 100px;
+        width: 300px;
+        top: 10px;
+      }
+
+      body {
+        height: 200vh;
+      }
+
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: #000000;
+    font-size: 20px;
+    padding: 10px;
+  }
+</style>
+<script>
+import { WebGLRenderer, Scene, PerspectiveCamera, PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
+
+const world = {};
+const os = [];
+const canvas = document.querySelector('#canvas');
+const canvasRect = canvas.getBoundingClientRect();
+
+init();
+function init() {
+
+    world.renderer = new WebGLRenderer({
+        canvas,
+        antialias: true
+    });
+    world.renderer.setSize(canvasRect.width, canvasRect.height, false);
+    world.renderer.setPixelRatio(window.devicePixelRatio);
+    world.renderer.setClearColor(0x000000, 0);
+
+    world.scene = new Scene();
+
+    const cameraWidth = canvasRect.width;
+    const cameraHeight = canvasRect.height;
+    const near = 1500;
+    const far = 4000;
+    const aspect = cameraWidth / cameraHeight;
+    const cameraZ = 2500;
+    const radian = 2 * Math.atan(cameraHeight / 2 / cameraZ);
+    const fov = radian * (180 / Math.PI);
+    world.camera = new PerspectiveCamera(fov, aspect, near, far);
+    world.camera.position.z = cameraZ;
+
+    const els = document.querySelectorAll('[data-webgl]');
+    els.forEach(el => {
+        const rect = el.getBoundingClientRect();
+
+        const geometry = new PlaneGeometry(rect.width,rect.height, 1, 1);
+        const material = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: .3 });
+        const mesh = new Mesh(geometry, material);
+        mesh.position.z = 0;
+
+        const { x, y } = getWorldPosition(rect, canvasRect);
+        mesh.position.x = x;
+        mesh.position.y = y;
+
+        const o = {
+            mesh,
+            geometry,
+            material,
+            rect,
+            $: {
+                el,
+            }
+        }
+
+        world.scene.add(mesh);
+        os.push(o);
+    })
+
+    animate();
+    function animate() {
+        requestAnimationFrame(animate);
+        // スクロール処理
+        os.forEach(o => scroll(o));
+        world.renderer.render(world.scene, world.camera);
+    }
+}
+
+function scroll(o) {
+    const { $: { el }, mesh } = o;
+    const rect = el.getBoundingClientRect();
+    const { y } = getWorldPosition(rect, canvasRect);
+    console.log(rect.top, y);
+    mesh.position.y = y;
+}
+
+function getWorldPosition (rect, canvasRect) {
+        const x = rect.left + rect.width / 2 - canvasRect.width / 2;
+        const y = -rect.top - rect.height / 2 + canvasRect.height / 2;
+        return { x, y };
+    }
+
+</script>
