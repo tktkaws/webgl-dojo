@@ -1,0 +1,183 @@
+---
+import Layout from '../../../../layouts/Layout.astro';
+const title = " 【smooth-scrollbar】";
+---
+
+<Layout title={title}>
+  <div id="page-container">
+    <h1 class="title">
+    {title}
+  </h1>
+  <div data-webgl class="div1">div1</div>
+    <section data-webgl class="gsap">gsap</section>
+    <img data-webgl src="/output1.jpg"/>
+  <canvas id="canvas"></canvas>
+  </div>
+
+</Layout>
+
+<style>
+  body {
+    margin: 0;
+}
+#page-container {
+    height: 100vh;
+}
+#canvas {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+}
+  [data-webgl] {
+        background: green;
+        opacity: .3;
+      }
+
+      .div1 {
+        margin-left: 100px;
+        margin-top: 100px;
+        width: 100px;
+        height: 100px;
+      }
+
+      section {
+        margin-left: 300px;
+        margin-top: 500px;
+        width: 200px;
+        height: 100px;
+      }
+
+      img {
+        position: absolute;
+        right: 100px;
+        width: 300px;
+        top: 10px;
+      }
+
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: #000000;
+    font-size: 20px;
+    padding: 10px;
+  }
+</style>
+<script>
+import gsap from "gsap";
+import Scrollbar from "smooth-scrollbar";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { WebGLRenderer, Scene, PerspectiveCamera, PlaneGeometry, MeshBasicMaterial, Mesh } from "three";
+
+const world = {};
+const os = [];
+const canvas = document.querySelector('#canvas');
+const canvasRect = canvas.getBoundingClientRect();
+
+init();
+function init() {
+
+    world.renderer = new WebGLRenderer({
+        canvas,
+        antialias: true
+    });
+    world.renderer.setSize(canvasRect.width, canvasRect.height, false);
+    world.renderer.setPixelRatio(window.devicePixelRatio);
+    world.renderer.setClearColor(0x000000, 0);
+
+    world.scene = new Scene();
+
+    const cameraWidth = canvasRect.width;
+    const cameraHeight = canvasRect.height;
+    const near = 1500;
+    const far = 4000;
+    const aspect = cameraWidth / cameraHeight;
+    const cameraZ = 2500;
+    const radian = 2 * Math.atan(cameraHeight / 2 / cameraZ);
+    const fov = radian * (180 / Math.PI);
+    world.camera = new PerspectiveCamera(fov, aspect, near, far);
+    world.camera.position.z = cameraZ;
+
+    const els = document.querySelectorAll('[data-webgl]');
+    els.forEach(el => {
+        const rect = el.getBoundingClientRect();
+
+        const geometry = new PlaneGeometry(rect.width,rect.height, 1, 1);
+        const material = new MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: .3 });
+        const mesh = new Mesh(geometry, material);
+        mesh.position.z = 0;
+
+        const { x, y } = getWorldPosition(rect, canvasRect);
+        mesh.position.x = x;
+        mesh.position.y = y;
+
+        const o = {
+            mesh,
+            geometry,
+            material,
+            rect,
+            $: {
+                el,
+            }
+        }
+
+        world.scene.add(mesh);
+        os.push(o);
+    })
+
+    animate();
+    function animate() {
+        requestAnimationFrame(animate);
+        // スクロール処理
+        os.forEach(o => scroll(o));
+        world.renderer.render(world.scene, world.camera);
+    }
+}
+
+function scroll(o) {
+    const { $: { el }, mesh } = o;
+    const rect = el.getBoundingClientRect();
+    const { x, y } = getWorldPosition(rect, canvasRect);
+    // mesh.position.x = x;
+    mesh.position.y = y;
+}
+
+function getWorldPosition (rect, canvasRect) {
+        const x = rect.left + rect.width / 2 - canvasRect.width / 2;
+        const y = -rect.top - rect.height / 2 + canvasRect.height / 2;
+        return { x, y };
+}
+
+function initScroller(){
+  const pageContainer = document.querySelector('#page-container');
+  Scrollbar.init(pageContainer);
+    gsap.registerPlugin(ScrollTrigger);
+    const el = document.querySelector('.gsap');
+    const meshX = os[1].mesh.position.x;
+    console.log(os[1]);
+  const animation = {
+    rotation: 0,
+    x: meshX,
+  }
+  gsap.to(animation, {
+    rotation: Math.PI * 2,
+    x: meshX + 600,
+    scrollTrigger: {
+        trigger: el,
+        start: "center 80%",
+        end: "center 20%",
+        scrub: true,
+        pin: true
+    },
+    onUpdate() {
+        os[1].mesh.position.x = animation.x;
+        os[1].mesh.rotation.z = animation.rotation;
+    }
+  })
+};
+initScroller();
+</script>
