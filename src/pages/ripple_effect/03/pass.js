@@ -3,7 +3,7 @@
  * https://threejs.org/
  */
 import * as THREE from "three";
-import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass";
+import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import fragmentShader from "./fragment.glsl";
 import vertexShader from "./vertex.glsl";
 
