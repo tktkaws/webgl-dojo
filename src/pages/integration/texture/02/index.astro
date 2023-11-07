@@ -1,0 +1,119 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+const title = "複数のテクスチャを読み込む";
+---
+
+<!--
+  step01
+  const texes = new Map();
+    const data = el.dataset;
+
+    for (let key in data) {
+      if (!key.startsWith("tex")) continue;
+      const url = data[key];
+      const tex = await texLoader.loadAsync(url);
+      key = key.replace("-", "");
+      console.log(url);
+      console.log(key);
+      texes.set(key, tex);
+    }
+
+step02
+texes.forEach((tex, key) => {
+      material.uniforms[key] = { value: tex };
+    });
+
+step03
+fragmentShader: `
+        varying vec2 vUv;
+        uniform vec2 uMouse;
+        uniform float uHover;
+        uniform sampler2D tex1;
+        uniform sampler2D tex2;
+
+        void main() {
+          // vec2 mouse = step(uMouse, vUv);
+          // gl_FragColor = vec4(mouse, uHover, 1.);
+          vec4 t1 = texture2D(tex1, vUv);
+          vec4 t2 = texture2D(tex2, vUv);
+          vec4 color = mix(t1, t2, step(.5, vUv.x));
+          // vec4 color = texture2D(tex2, vUv);
+          gl_FragColor = color;
+        }
+      `
+
+-->
+<Layout title={title}>
+  <div id="global-container">
+    <div id="page-container">
+      <h1 class="title">
+        {title}
+      </h1>
+      <img
+        data-webgl
+        data-tex-1="/output1.jpg"
+        src="/output1.jpg"
+        data-tex-2="/output2.jpg"
+        src="/output2.jpg"
+      />
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
+</Layout>
+
+<style>
+  body {
+    margin: 0;
+  }
+  #page-container {
+    height: 100vh;
+  }
+  #canvas {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+  [data-webgl] {
+    background: green;
+    opacity: 0.3;
+  }
+
+  .div1 {
+    margin-left: 100px;
+    margin-top: 100px;
+    width: 100px;
+    height: 100px;
+  }
+
+  section {
+    margin-left: 300px;
+    margin-top: 500px;
+    width: 200px;
+    height: 100px;
+  }
+
+  img {
+    position: absolute;
+    right: 100px;
+    width: 300px;
+    top: 10px;
+  }
+
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: #000000;
+    font-size: 20px;
+    padding: 10px;
+  }
+</style>
+<script>
+  // エントリーポイント
+  import { init } from "./scripts/bootstrap";
+  init();
+</script>
