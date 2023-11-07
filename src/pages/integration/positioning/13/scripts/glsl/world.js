@@ -11,8 +11,7 @@ import {
 } from "three";
 
 import { utils, viewport } from "../helper";
-
-const pointer = new Vector2();
+import mouse from "../component/mouse";
 
 const world = {
   os: [],
@@ -171,8 +170,8 @@ function scroll(o) {
 }
 
 function raycast() {
-  // update the picking ray with the camera and pointer position
-  world.raycaster.setFromCamera(pointer, world.camera);
+  const clipPos = mouse.getClipPos();
+  world.raycaster.setFromCamera(clipPos, world.camera);
 
   // calculate objects intersecting the picking ray
   const intersects = world.raycaster.intersectObjects(world.scene.children);
@@ -192,15 +191,5 @@ function raycast() {
     uHover.value = utils.lerp(uHover.value, uHover.__endValue, 0.1);
   }
 }
-
-function onPointerMove(event) {
-  // calculate pointer position in normalized device coordinates
-  // (-1 to +1) for both components
-
-  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-}
-
-window.addEventListener("pointermove", onPointerMove);
 
 export default world;

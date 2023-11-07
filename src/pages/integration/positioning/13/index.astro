@@ -4,15 +4,17 @@ const title = "リファクタリング";
 ---
 
 <Layout title={title}>
-  <div id="page-container">
-    <h1 class="title">
-      {title}
-    </h1>
-    <div data-webgl class="div1">div1</div>
-    <section data-webgl class="gsap">gsap</section>
-    <img data-webgl src="/output1.jpg" />
+  <div id="global-container">
+    <div id="page-container">
+      <h1 class="title">
+        {title}
+      </h1>
+      <div data-webgl class="div1">div1</div>
+      <section data-webgl class="gsap">gsap</section>
+      <img data-webgl src="/output1.jpg" />
+    </div>
+    <canvas id="canvas"></canvas>
   </div>
-  <canvas id="canvas"></canvas>
 </Layout>
 
 <style>
