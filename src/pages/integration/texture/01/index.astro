@@ -1,0 +1,82 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+const title = "テクスチャをＵＲＬから読み込む";
+---
+
+<!--
+  dataset
+非同期処理
+async await
+forEachはpromiseを返さない
+mapはpromiseを返す
+Promise.allはpromiseを返す
+スプレッド演算子
+-->
+<Layout title={title}>
+  <div id="global-container">
+    <div id="page-container">
+      <h1 class="title">
+        {title}
+      </h1>
+      <img data-webgl data-tex-1="/output1.jpg" src="/output1.jpg" />
+    </div>
+    <canvas id="canvas"></canvas>
+  </div>
+</Layout>
+
+<style>
+  body {
+    margin: 0;
+  }
+  #page-container {
+    height: 100vh;
+  }
+  #canvas {
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+  }
+  [data-webgl] {
+    background: green;
+    opacity: 0.3;
+  }
+
+  .div1 {
+    margin-left: 100px;
+    margin-top: 100px;
+    width: 100px;
+    height: 100px;
+  }
+
+  section {
+    margin-left: 300px;
+    margin-top: 500px;
+    width: 200px;
+    height: 100px;
+  }
+
+  img {
+    position: absolute;
+    right: 100px;
+    width: 300px;
+    top: 10px;
+  }
+
+  .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    color: #000000;
+    font-size: 20px;
+    padding: 10px;
+  }
+</style>
+<script>
+  // エントリーポイント
+  import { init } from "./scripts/bootstrap";
+  init();
+</script>
